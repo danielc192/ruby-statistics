@@ -9,10 +9,9 @@
 
 **********************************************************************/
 
-#include <math.h>
-#include <time.h>
-#include <stdlib.h>
 #include <ruby.h>
+#include "ruby/config.h"
+#include <math.h>
 
 struct stat_stdev_args {
    double sum, sum2;
@@ -52,7 +51,7 @@ stat_stddev(VALUE obj, VALUE list)
    rb_iterate(rb_each, list, stdev_i, (VALUE)&args);
    mean = args.sum / args.num;
    stddev = sqrt(args.sum2 / args.num - mean*mean);
-   return DBL2NUM(stddev);
+   return rb_float_new(stddev);
 }
 
 /*
@@ -72,7 +71,7 @@ stat_sum(VALUE obj, VALUE list)
    args.sum = args.sum2 = 0.0;
    args.num = 0;
    rb_iterate(rb_each, list, stdev_i, (VALUE)&args);
-   return DBL2NUM(args.sum);
+   return rb_float_new(args.sum);
 }
 
 /*static VALUE
@@ -85,7 +84,7 @@ stat_sum(VALUE obj, VALUE ary)
 	for (i=0; i<RARRAY_LEN(ary); i++) {
 		sum += NUM2DBL(RARRAY_PTR(ary)[i]);
 	}
-	return DBL2NUM(sum);
+	return rb_float_new(sum);
 }*/
 
 /*
@@ -104,7 +103,7 @@ stat_sum2(VALUE obj, VALUE list)
    args.sum = args.sum2 = 0.0;
    args.num = 0;
    rb_iterate(rb_each, list, stdev_i, (VALUE)&args);
-   return DBL2NUM(args.sum2);
+   return rb_float_new(args.sum2);
 }
 
 /*
@@ -126,7 +125,7 @@ stat_stddev_s(VALUE obj, VALUE list)
 	rb_iterate(rb_each, list, stdev_i, (VALUE)&args);
 	mean = args.sum / args.num;
 	stddevs = sqrt((args.sum2 - (pow(args.sum,2) / args.num)) / (args.num - 1)); 
-	return DBL2NUM(stddevs);
+	return rb_float_new(stddevs);
 }
 
 /*
@@ -146,8 +145,8 @@ stat_mean(VALUE obj, VALUE list)
 	args.sum = args.sum2 = 0.0;
 	args.num = 0;
 	rb_iterate(rb_each, list, stdev_i, (VALUE)&args);
-	mean = args.sum / args.num;
-	return DBL2NUM(mean);
+	mean = args.sum / (double) args.num;
+	return rb_float_new(mean);
 }
 
 /*
@@ -166,7 +165,7 @@ stat_cdf(VALUE obj, VALUE sig, VALUE mu, VALUE x)
 	double numer, denom;
 	numer = x - mu;
 	denom = sig * sqrt(2);
-	return DBL2NUM(0.5+0.5*erf(numer/denom));
+	return rb_float_new(0.5+0.5*erf(numer/denom));
 }
 
 
@@ -178,7 +177,7 @@ stat_median(VALUE obj, VALUE list)
 	{
 		if ( i == (RARRAY_LEN(list) / 2)) {
 			if((RARRAY_LEN(list) % 2) == 0) {
-				return DBL2NUM((NUM2DBL(RARRAY_PTR(list)[i]) + NUM2DBL(RARRAY_PTR(list)[i-1])) / 2);
+				return rb_float_new((NUM2DBL(RARRAY_PTR(list)[i]) + NUM2DBL(RARRAY_PTR(list)[i-1])) / 2);
 			}
 		}
 		
@@ -195,8 +194,8 @@ stat_median(VALUE obj, VALUE list)
 void
 Init_statistics(void)
 {
-   VALUE mStatistics = rb_define_module("statistics");
-   rb_define_module_function(mStatistics, "stddev", stat_stddev, 1);
+   VALUE mStatistics = rb_define_module("Statistics");
+   rb_define_module_function(mStatistics, "stdev", stat_stddev, 1);
    rb_define_module_function(mStatistics, "sum", stat_sum, 1);
    rb_define_module_function(mStatistics, "sum2", stat_sum2, 1);
    rb_define_module_function(mStatistics, "stddevs", stat_stddev_s, 1);
