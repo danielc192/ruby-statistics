@@ -13,11 +13,12 @@
 
 #include <ruby.h>
 #include "ruby/config.h"
+//Debug only
 #include <stdio.h>
 #include <math.h>
 
 struct stat_data_args {
-   double sum, sum2;
+   double sum, sum2, product;
    long num;
 };
 
@@ -29,6 +30,7 @@ stat_i(VALUE elem, VALUE arg, int argc, VALUE *argv)
    double x = NUM2DBL(elem);
    a->sum += x;
    a->sum2 += pow(x, 2);
+   a->product *= x;
    a->num++;
    return Qnil;
 }	
@@ -243,7 +245,30 @@ stat_linreg2(VALUE obj, VALUE xvals, VALUE yvals)
 	return result;
 	
 }
+
+/*
+ * call-seq:
+ *	Statistics.geomean(enum)   => double
+ *
+ *	Returns the geometric mean given an <i>enum</i>
+ */
+
+static VALUE
+stat_geomean(VALUE obj, VALUE list)
+{
+	double exp;
+	struct stat_data_args args;
+	args.product = 1;
+	args.num = 0;
+	rb_iterate(rb_each, list, stat_i, (VALUE)&args);
 	
+	return rb_float_new(pow(args.product, 1 / (double) (args.num)));
+}
+	
+	
+/*
+ * This module provides statistics functions for the ruby language
+ */
 
 void
 Init_statistics(void)
@@ -257,4 +282,5 @@ Init_statistics(void)
    rb_define_module_function(mStatistics, "median", stat_median, 1);
    rb_define_module_function(mStatistics, "cdf", stat_cdf, 3);
    rb_define_module_function(mStatistics, "linreg2", stat_linreg2, 2);
+   rb_define_module_function(mStatistics, "geomean", stat_geomean, 1);
 }
