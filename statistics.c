@@ -264,7 +264,36 @@ stat_geomean(VALUE obj, VALUE list)
 	
 	return rb_float_new(pow(args.product, 1 / (double) (args.num)));
 }
+
+/*
+ * call-seq:
+ *	Statistics.percentile(enum, double)   => double
+ *
+ *	Returns the number that is the upper bound of the <i>percentile</i> 
+ */
+
+static VALUE
+stat_percentile(VALUE obj, VALUE list, VALUE p)
+{
 	
+	double median, middle, ints;
+	int len;
+	
+	list = rb_ary_sort(list);
+   
+	len = RARRAY_LEN(list);
+    middle = (double) (len) * (NUM2DBL(p)/100);
+
+	if ((modf(middle, &ints) == 0))
+	{
+		median = (NUM2DBL(RARRAY_PTR(list)[(int) middle]) + NUM2DBL(RARRAY_PTR(list)[(int) (middle - 1)])) / 2;
+		return rb_float_new(median);
+	}
+	else 
+	{
+	return rb_float_new(NUM2DBL(RARRAY_PTR(list)[(int) floor(middle)]));
+	}
+}
 	
 /*
  * This module provides statistics functions for the ruby language
@@ -283,4 +312,5 @@ Init_statistics(void)
    rb_define_module_function(mStatistics, "cdf", stat_cdf, 3);
    rb_define_module_function(mStatistics, "linreg2", stat_linreg2, 2);
    rb_define_module_function(mStatistics, "geomean", stat_geomean, 1);
+   rb_define_module_function(mStatistics, "percentile", stat_percentile, 2);
 }
