@@ -11,19 +11,13 @@
 
 #include <ruby.h>
 #include "ruby/config.h"
+#include <stdio.h>
 #include <math.h>
 
 struct stat_data_args {
    double sum, sum2;
    long num;
 };
-
-
-double dblmod(double a, double b)
-{
-int result = (int) ( a / b );
-return a - (double) ( result ) * b;
-}
 
 
 static VALUE
@@ -173,24 +167,27 @@ stat_cdf(VALUE obj, VALUE mu, VALUE sig, VALUE x)
 }
 
 
-/*static VALUE
+static VALUE
 stat_median(VALUE obj, VALUE list)
 {
-	struct stat_data_args args;
 	double median, middle;
+	int len;
 	
-    middle = NUM2DBL(RARRAY_LEN(list))/ 2;
+	list = rb_ary_sort(list);
+   
+	len = RARRAY_LEN(list);
+    middle = (double) (len) / 2;
 
-	if ((dblmod(middle,2)) == 0)
+	if ((fmod(len,2)) == 0)
 	{
-		
+		median = (NUM2DBL(RARRAY_PTR(list)[(int) middle]) + NUM2DBL(RARRAY_PTR(list)[(int) (middle - 1)])) / 2;
 		return rb_float_new(median);
 	}
 	else 
 	{
-	return rb_float_new(NUM2DBL(RARRAY_PTR(list)[(int) (middle + 0.5)]));
+	return rb_float_new(NUM2DBL(RARRAY_PTR(list)[(int) (middle - 0.5)]));
 	}
-}*/
+}
 
 void
 Init_statistics(void)
@@ -201,6 +198,6 @@ Init_statistics(void)
    rb_define_module_function(mStatistics, "sum2", stat_sum2, 1);
    rb_define_module_function(mStatistics, "stddevs", stat_stddev_s, 1);
    rb_define_module_function(mStatistics, "mean", stat_mean, 1);
-   //rb_define_module_function(mStatistics, "median", stat_median, 1);
+   rb_define_module_function(mStatistics, "median", stat_median, 1);
    rb_define_module_function(mStatistics, "cdf", stat_cdf, 3);
 }
