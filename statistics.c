@@ -5,7 +5,9 @@
   $Authors: nobu, dcohen $
   created at: Tue Nov 03 09:42:52 JST 2009
 
-  Copyright (C) 2009 Nobuyoshi Nakada and Daniel Cohen
+  Copyright (C) 2009-2010 Nobuyoshi Nakada and Daniel Cohen
+  
+  With Special Thanks to Steven Cohen for stat_median assistance
 
 **********************************************************************/
 
