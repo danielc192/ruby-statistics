@@ -153,7 +153,7 @@ stat_mean(VALUE obj, VALUE list)
 
 /*
  *  call-seq:
- *     Statistics.cdf(enum, x)   =>   double
+ *     Statistics.cdf(mean, standard deviation, x)   =>   double
  *
  *  Computes the Area under a Cumulative Distribution or Normal Distribution
  *  given the <i>mean</i>, <i>standard deviation</i> and an <i>x</i> value.
@@ -163,9 +163,9 @@ static VALUE
 stat_cdf(VALUE obj, VALUE mu, VALUE sig, VALUE x)
 {
 	double numer, denom;
-	numer = rb_float_new(x) - NUM2DBL(mu);
-	denom = NUM2DBL(sig) * sqrt(2);
-	return rb_float_new(0.5+0.5*erf(numer/denom));
+	numer = NUM2DBL(x) -  NUM2DBL(mu);
+	denom = sqrt(2*pow(NUM2DBL(sig),2));
+	return rb_float_new(0.5*(1+erf(numer/denom)));
 }
 
 
