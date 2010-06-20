@@ -168,6 +168,13 @@ stat_cdf(VALUE obj, VALUE mu, VALUE sig, VALUE x)
 	return rb_float_new(0.5*(1+erf(numer/denom)));
 }
 
+/*
+ *	call-seq:
+ *		Statistics.median(enum)   =>   double
+ *
+ *	Finds the median of an <i>enum</i>
+ */
+
 
 static VALUE
 stat_median(VALUE obj, VALUE list)
@@ -191,6 +198,53 @@ stat_median(VALUE obj, VALUE list)
 	}
 }
 
+/*
+ *	call-seq:
+ *		Statistics.linreg2(enum, enum)	=> double
+ *
+ *	Returns the slope, intercept and correlation coefficient given equal arrays of
+ *  <i>X-Values</i> and <i>Y-Values</i>
+ */
+
+static VALUE
+stat_linreg2(VALUE obj, VALUE xvals, VALUE yvals)
+{
+    struct stat_data_args xargs;
+    struct stat_data_args yargs;
+	double meanx, meany, sumx, sumx2, sumxy, slope, intercept, R ,xstdev, ystdev;
+	meanx = meany = sumx = sumx2 = sumxy = slope = intercept = R = 0;
+	int i;
+	VALUE result = rb_hash_new();
+	rb_iterate(rb_each, xvals, stat_i, (VALUE)&xargs);
+	rb_iterate(rb_each, yvals, stat_i, (VALUE)&yargs);
+
+	meanx = NUM2DBL(stat_mean(0,xvals));
+	meany = NUM2DBL(stat_mean(0,yvals));
+	sumx = xargs.sum;
+	sumx2 = xargs.sum2;
+	
+	for(i=0;i < RARRAY_LEN(xvals);i++)
+	{
+		sumxy += (NUM2DBL(RARRAY_PTR(xvals)[i]) * NUM2DBL(RARRAY_PTR(yvals)[i]));
+	}
+	
+	slope = ((meany * sumx) - sumxy) / ((meanx * sumx) - sumx2);
+	intercept = (-1 * slope * meanx) + meany;
+	xstdev = NUM2DBL(stat_stddev(0,xvals));
+	ystdev = NUM2DBL(stat_stddev(0,yvals));
+	R = (slope * xstdev) / ystdev;
+	// Shouldn't need this but otherwise it doesn't work!
+	printf("", R);
+	
+	rb_hash_aset(result, rb_str_new2("m"), rb_float_new(slope));
+	rb_hash_aset(result, rb_str_new2("b"), rb_float_new(intercept));
+	rb_hash_aset(result, rb_str_new2("R"), rb_float_new(R));
+	
+	return result;
+	
+}
+	
+
 void
 Init_statistics(void)
 {
@@ -202,4 +256,5 @@ Init_statistics(void)
    rb_define_module_function(mStatistics, "mean", stat_mean, 1);
    rb_define_module_function(mStatistics, "median", stat_median, 1);
    rb_define_module_function(mStatistics, "cdf", stat_cdf, 3);
+   rb_define_module_function(mStatistics, "linreg2", stat_linreg2, 2);
 }
