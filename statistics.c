@@ -160,15 +160,15 @@ stat_mean(VALUE obj, VALUE list)
  *     Statistics.cdf(enum, x)   =>   double
  *
  *  Computes the Area under a Cumulative Distribution or Normal Distribution
- *  given an <i>enum</i> and an <i>x</i> value.
+ *  given the <i>mean</i>, <i>standard deviation</i> and an <i>x</i> value.
  */
 
 static VALUE
-stat_cdf(VALUE obj, VALUE list, VALUE x)
+stat_cdf(VALUE obj, VALUE mu, VALUE sig, VALUE x)
 {
 	double numer, denom;
-	numer = x - stat_mean(0,list);
-	denom = stat_stddev(0,list) * sqrt(2);
+	numer = rb_float_new(x) - NUM2DBL(mu);
+	denom = NUM2DBL(sig) * sqrt(2);
 	return rb_float_new(0.5+0.5*erf(numer/denom));
 }
 
@@ -202,5 +202,5 @@ Init_statistics(void)
    rb_define_module_function(mStatistics, "stddevs", stat_stddev_s, 1);
    rb_define_module_function(mStatistics, "mean", stat_mean, 1);
    //rb_define_module_function(mStatistics, "median", stat_median, 1);
-   rb_define_module_function(mStatistics, "cdf", stat_cdf, 2);
+   rb_define_module_function(mStatistics, "cdf", stat_cdf, 3);
 }
