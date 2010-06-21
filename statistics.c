@@ -12,7 +12,7 @@
 **********************************************************************/
 
 
-#include "statistics.h"
+#include "statistics.h"x
 //Debug only
 #include <stdio.h>
 
@@ -28,7 +28,7 @@ stat_i(VALUE elem, VALUE arg, int argc, VALUE *argv)
    struct stat_data_args *a = (void *)arg;
    double x = NUM2DBL(elem);
    a->sum += x;
-   a->sum2 += pow(x, 2);
+   a->sum2 += x*x;
    a->product *= x;
    a->num++;
    return Qnil;
@@ -231,7 +231,8 @@ stat_linreg2(VALUE obj, VALUE xvals, VALUE yvals)
 	meanx = NUM2DBL(stat_mean(0,xvals));
 	meany = NUM2DBL(stat_mean(0,yvals));
 	sumx = xargs.sum;
-	sumx2 = xargs.sum2;
+	sumx2 = NUM2DBL(stat_sum2(0,xvals));
+
 	
 	for(i=0;i < RARRAY_LEN(xvals);i++)
 	{
@@ -243,8 +244,6 @@ stat_linreg2(VALUE obj, VALUE xvals, VALUE yvals)
 	xstdev = NUM2DBL(stat_stddev(0,xvals));
 	ystdev = NUM2DBL(stat_stddev(0,yvals));
 	R = (slope * xstdev) / ystdev;
-	// Shouldn't need this but otherwise it doesn't work!
-	printf("", R);
 	
 	rb_hash_aset(result, rb_str_new2("m"), rb_float_new(slope));
 	rb_hash_aset(result, rb_str_new2("b"), rb_float_new(intercept));
