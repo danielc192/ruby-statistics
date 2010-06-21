@@ -11,11 +11,10 @@
 
 **********************************************************************/
 
-#include <ruby.h>
-#include "ruby/config.h"
+
+#include "statistics.h"
 //Debug only
 #include <stdio.h>
-#include <math.h>
 
 struct stat_data_args {
    double sum, sum2, product;
@@ -170,6 +169,15 @@ stat_cdf(VALUE obj, VALUE mu, VALUE sig, VALUE x)
 	return rb_float_new(0.5*(1+erf(numer/denom)));
 }
 
+
+static VALUE
+stat_icdf(VALUE obj, VALUE mu, VALUE sig, VALUE y)
+{
+	double term1, term2;
+	term1 = erfinv(2*NUM2DBL(y)-1);
+	term2 = sqrt(2*pow(NUM2DBL(sig),2));
+	return rb_float_new(term1*term2+NUM2DBL(mu));
+}
 /*
  *	call-seq:
  *		Statistics.median(enum)   =>   double
@@ -310,6 +318,7 @@ Init_statistics(void)
    rb_define_module_function(mStatistics, "mean", stat_mean, 1);
    rb_define_module_function(mStatistics, "median", stat_median, 1);
    rb_define_module_function(mStatistics, "cdf", stat_cdf, 3);
+   rb_define_module_function(mStatistics, "icdf", stat_icdf, 3);
    rb_define_module_function(mStatistics, "linreg2", stat_linreg2, 2);
    rb_define_module_function(mStatistics, "geomean", stat_geomean, 1);
    rb_define_module_function(mStatistics, "percentile", stat_percentile, 2);
