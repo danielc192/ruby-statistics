@@ -169,6 +169,14 @@ stat_cdf(VALUE obj, VALUE mu, VALUE sig, VALUE x)
 	return rb_float_new(0.5*(1+erf(numer/denom)));
 }
 
+/*
+ *	call-seq:
+ *		Statistics.icdf(mean, standard deviation, y)   => double
+ *
+ *	Computes the inverse of the Cumulative Normal Distribution
+ *
+ */
+
 
 static VALUE
 stat_icdf(VALUE obj, VALUE mu, VALUE sig, VALUE y)
@@ -210,7 +218,7 @@ stat_median(VALUE obj, VALUE list)
 
 /*
  *	call-seq:
- *		Statistics.linreg2(enum, enum)	=> double
+ *		Statistics.linreg2(enum, enum)	=> {"b"=>double,"m"=>double,"R"=>double}
  *
  *	Returns the slope, intercept and correlation coefficient given equal arrays of
  *  <i>X-Values</i> and <i>Y-Values</i>
@@ -301,7 +309,32 @@ stat_percentile(VALUE obj, VALUE list, VALUE p)
 	return rb_float_new(NUM2DBL(RARRAY_PTR(list)[(int) floor(middle)]));
 	}
 }
+
+/*
+ * call-seq:
+ *	Statistics.confidence(enum, standard deviation, alpha)  => {"upper"=>double, "lower"=>double}
+ *
+ * Returns the upper and lower bounds of a confidence interval given a <i>sample set</i>,
+ * the <i>standard deviation</i> of the population and a <i>confidence level</i> (0 <= alpha >= 1)
+ */
+
+static VALUE
+stat_confidence(VALUE obj, VALUE list, VALUE sig, VALUE alpha)
+{
+	double mean, N, sigM, z;
+	VALUE result = rb_hash_new();
 	
+	
+	mean = NUM2DBL(stat_mean(0,list));
+	N = (double) RARRAY_LEN(list);
+	sigM = NUM2DBL(sig) / sqrt(N);
+	z = NUM2DBL(stat_icdf(0,rb_float_new(0),rb_float_new(1),rb_float_new(1-((1-NUM2DBL(alpha))/2))));
+	
+	rb_hash_aset(result, rb_str_new2("lower"), rb_float_new(mean - (z*sigM)));
+	rb_hash_aset(result, rb_str_new2("upper"), rb_float_new(mean + (z*sigM)));
+	
+	return result;
+}
 /*
  * This module provides statistics functions for the ruby language
  */
@@ -321,4 +354,5 @@ Init_statistics(void)
    rb_define_module_function(mStatistics, "linreg2", stat_linreg2, 2);
    rb_define_module_function(mStatistics, "geomean", stat_geomean, 1);
    rb_define_module_function(mStatistics, "percentile", stat_percentile, 2);
+   rb_define_module_function(mStatistics, "confidence", stat_confidence, 3);
 }
